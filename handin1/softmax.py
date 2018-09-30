@@ -27,12 +27,10 @@ def softmax(X):
     """
     res = np.zeros(X.shape)
     ### YOUR CODE HERE no for loops please
-    startTime=time()
     res = np.exp(X - np.max(X, axis=1, keepdims=True))
     res = res / np.sum(res, axis=1, keepdims=True)
     #res= np.exp(X)/np.sum(np.exp(X), axis=1, keepdims=True)
-    duration = time()-startTime
-    print(duration)
+
     ### END CODE
     return res
 
@@ -73,7 +71,7 @@ class SoftmaxClassifier():
         Yk = one_in_k_encoding(y, self.num_classes) # may help - otherwise you may remove it
         ### YOUR CODE HERE
         self.w = W
-
+        #startTime=time()
         n = len(X)
         z = np.sum( np.log(softmax( np.dot(X,W) ))*Yk, axis=1)
         z = np.sum(z )
@@ -81,6 +79,8 @@ class SoftmaxClassifier():
         
         z = Yk- softmax(np.dot(X, W))
         grad= -np.transpose(X).dot(z)/n
+        #duration = time()-startTime
+        #print(duration)
         ### END CODE
         return cost, grad
 
