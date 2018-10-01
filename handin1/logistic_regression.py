@@ -1,5 +1,6 @@
 import numpy as np
 from h1_util import numerical_grad_check
+import math
 
 def logistic(z):
     """ 
@@ -51,6 +52,7 @@ class LogisticRegressionClassifier():
        #     temp+=x
         #cost= (-1)*temp[0]/m
         #grad= -np.dot(np.transpose(X),(y-self.predict(X)))
+        y = np.where( y==0, -1, 1)
         n = len(X)
         a = 0
         for i in range(n):
@@ -93,7 +95,29 @@ class LogisticRegressionClassifier():
         if w is None: w = np.zeros(X.shape[1])
         history = []        
         ### YOUR CODE HERE 14 - 20 lines
-        ##for i in range (epoch):
+        for i in range (epochs):
+            # Shuffling the data
+            # Resetting the state will ensure the same shuffle
+            shuffle_X = np.copy(X)
+            shuffle_Y = np.copy(y)
+            rng_state = np.random.get_state()
+            np.random.shuffle(shuffle_X)
+            np.random.set_state(rng_state)
+            np.random.shuffle(shuffle_Y)
+        
+            n = len(shuffle_X)
+            b =  math.ceil(n / batch_size)
+            batch_index = 0
+            for j in range(b):
+                batch_end = min(batch_index + batch_size, n)
+                batch_X = shuffle_X[batch_index : batch_end]
+                batch_Y = shuffle_Y[batch_index : batch_end]
+                cost, grad = self.cost_grad(batch_X, batch_Y, w)
+                
+                w = w - lr * (1 / batch_size) * grad
+                history.append(cost)
+                
+                batch_index += batch_size
             
         ### END CODE
         self.w = w
@@ -112,8 +136,16 @@ class LogisticRegressionClassifier():
         """
         pred = np.zeros(X.shape[0])
         ### YOUR CODE HERE 1 - 4 lines
-        z= np.dot(X, self.w)
-        out= logistic(z)
+        #z= np.dot(X, self.w)
+        #out= logistic(z)
+        for i in range(len(X)):
+            pred[i] = logistic(np.dot(self.w.T, X[i]))
+        
+        #creates a list of -1 and 1
+        out = np.sign(pred - 0.5)
+        
+        #converts all -1 to 0, so that out contains 0 and 1 instead
+        out = np.where(out==-1, 0,1)
         ### END CODE
         return out
     
@@ -130,6 +162,7 @@ class LogisticRegressionClassifier():
         """
         s = 0
         ### YOUR CODE HERE 1 - 4 lines
+        s = np.mean(self.predict(X)==y)
         ### END CODE
         return s
         
